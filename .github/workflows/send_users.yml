@@ -1,33 +1,47 @@
-name: Send Users to Webhook
+# File: .github/workflows/manual_run.yml
 
+name: Manual Candidate Processing
+
+# This allows you to run this workflow manually from the Actions tab
 on:
   workflow_dispatch:
     inputs:
-      users_json:
-        description: 'JSON array of users'
+      candidate_json:
+        description: 'Paste the candidate JSON array here'
         required: true
-      job_details:
-        description: 'JSON object of job details'
+        type: string
+      job_details_json:
+        description: 'Paste the job details JSON object here'
         required: true
+        type: string
 
 jobs:
-  send-users:
-    runs-on: ubuntu-latest
+  process-candidates:
+    runs-on: ubuntu-latest # Use a standard Linux runner
+
     steps:
-      - name: Checkout repository
+      # Step 1: Check out your repository code
+      - name: Check out code
         uses: actions/checkout@v4
 
+      # Step 2: Set up a specific version of Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
+      # Step 3: Install necessary Python packages
       - name: Install dependencies
-        run: pip install requests
-
-      - name: Run script to send users
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+      
+      # Step 4: Run the wrapper script
+      - name: Run Candidate Processing Script
         env:
-          USERS_JSON: ${{ inputs.users_json }}
-          JOB_DETAILS: ${{ inputs.job_details }}
-          WEBHOOK_URL: https://n8n-app-p68zu.ondigitalocean.app/webhook/78a12fd5-0abd-491e-a689-60d5d305b921
-        run: python send_users.py
+          # Map the workflow inputs and secrets to environment variables
+          # The run_workflow.py script will read these
+          CANDIDATE_INPUT: ${{ inputs.candidate_json }}
+          JOB_DETAILS_INPUT: ${{ inputs.job_details_json }}
+          API_KEY_SECRET: ${{ secrets.GOOGLE_API_KEY }}
+        run: python run_workflow.py
