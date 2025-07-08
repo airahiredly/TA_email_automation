@@ -2,46 +2,37 @@
 
 name: Manual Candidate Processing
 
-# This allows you to run this workflow manually from the Actions tab
 on:
   workflow_dispatch:
     inputs:
-      candidate_json:
-        description: 'Paste the candidate JSON array here'
-        required: true
-        type: string
-      job_details_json:
-        description: 'Paste the job details JSON object here'
+      # Define a single input for the combined JSON payload
+      payload_json:
+        description: 'Paste the combined JSON payload here'
         required: true
         type: string
 
 jobs:
   process-candidates:
-    runs-on: ubuntu-latest # Use a standard Linux runner
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out your repository code
       - name: Check out code
         uses: actions/checkout@v4
 
-      # Step 2: Set up a specific version of Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # Step 3: Install necessary Python packages
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests
       
-      # Step 4: Run the wrapper script
+      # This step now passes the single input to the environment
       - name: Run Candidate Processing Script
         env:
-          # Map the workflow inputs and secrets to environment variables
-          # The run_workflow.py script will read these
-          CANDIDATE_INPUT: ${{ inputs.candidate_json }}
-          JOB_DETAILS_INPUT: ${{ inputs.job_details_json }}
+          # Map the single input and the secret to environment variables
+          PAYLOAD_INPUT: ${{ inputs.payload_json }}
           API_KEY_SECRET: ${{ secrets.GOOGLE_API_KEY }}
         run: python run_workflow.py
