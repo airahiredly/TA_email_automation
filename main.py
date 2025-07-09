@@ -1,5 +1,6 @@
 import requests
 import os
+import time
 
 # === CONFIGURATION ===
 API_KEY = os.getenv("GSHEETS_API_KEY")
@@ -58,6 +59,7 @@ def main():
         key = row_key_two_columns(row)
         if key != ("", "") and key not in existing_keys:
             send_to_webhook(row)
+            time.sleep(5)
         else:
             print(f"⏩ Skipping row (already exists or invalid): {row}")
 
