@@ -21,7 +21,7 @@ def get_sheet_data(sheet_id, range_):
 
 def row_key_two_columns(row):
     try:
-        return (row[0].strip().lower())
+        return (row[0].strip().lower(), row[1].strip().lower())
     except IndexError:
         return ("", "")
 
@@ -51,16 +51,16 @@ def main():
     data1 = sheet1_data[1:] if sheet1_data else []  # Skip header
     data2 = sheet2_data[1:] if sheet2_data else []
 
+    # Build set of (colA, colB) from Sheet2
     existing_keys = set(row_key_two_columns(row) for row in data2)
 
     for row in data1:
         key = row_key_two_columns(row)
-        if key[0] and key[1] and key not in existing_keys:
+        if key != ("", "") and key not in existing_keys:
             send_to_webhook(row)
         else:
-            print(f"Row exists or invalid, skipping: {row}")
+            print(f"⏩ Skipping row (already exists or invalid): {row}")
 
-    # ✅ Trigger final webhook
     trigger_final_webhook()
 
 if __name__ == "__main__":
