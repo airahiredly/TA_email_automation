@@ -8,7 +8,7 @@ SHEET1_ID = "129BnqQCSd8cQqxCDLsc6benKxKDkcHqmndWK3Tb0vhM"
 SHEET2_ID = "1K8xrRJgJSnd8-6jiRWNXs4FmI50Pf-oB_nEGybL7olU"
 SHEET1_RANGE = "Candidate!A:C"
 SHEET2_RANGE = "Candidate!A:C"
-DATA_WEBHOOK_URL = "https://n8n-app-p68zu.ondigitalocean.app/webhook-test/6f77db62-5349-4076-9577-be546c054dc0"
+DATA_WEBHOOK_URL = "https://n8n-app-p68zu.ondigitalocean.app/webhook/6f77db62-5349-4076-9577-be546c054dc0"
 
 # DATA_WEBHOOK_URL_TESTING = "https://n8n-app-p68zu.ondigitalocean.app/webhook-test/6f77db62-5349-4076-9577-be546c054dc0"
 # DATA_WEBHOOK_URL_PRODUCTION = "https://n8n-app-p68zu.ondigitalocean.app/webhook/6f77db62-5349-4076-9577-be546c054dc0"
