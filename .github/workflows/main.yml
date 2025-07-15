@@ -1,9 +1,10 @@
 name: Run Recommender Sync
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 1 * * *'
+  push:
+    branches: [production]
+  
+  workflow_dispatch:      # 👈 Manual trigger via GitHub UI
 
 jobs:
   recommender-job:
