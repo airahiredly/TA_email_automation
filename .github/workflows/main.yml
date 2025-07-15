@@ -1,11 +1,9 @@
 name: Run Recommender Sync
 
 on:
+  workflow_dispatch:  # Manual trigger
   push:
     branches: [production]
-  
-  workflow_dispatch:      # 👈 Manual trigger via GitHub UI
-
 jobs:
   recommender-job:
     runs-on: ubuntu-latest
