@@ -1,7 +1,9 @@
 name: Run Recommender Sync
 
 on:
-  workflow_dispatch:  # Manual trigger
+   workflow_dispatch:  # Manual trigge
+   push:
+    branches: [stag]  # Manual trigger
 jobs:
   recommender-job:
     runs-on: ubuntu-latest
