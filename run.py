@@ -3,13 +3,23 @@ import csv
 import snowflake.connector
 from datetime import datetime
 import pandas
+import os
 
-# === CONFIGURATION ===
-API_KEY = "AIzaSyADynlfr6qm28II06W6tp08rBOgfuSGyhs"
-SHEET_ID = "1qioNekBHJyyb9gSr39Fm67pPIhTFeZamay-Mp9F2f-4"
-SHEET_NAME = "Jobs"
-POST_ENDPOINT = "https://my-ashley-api.hiredly.com/recommender/recommended_users"
+# === CONFIGURATION FROM ENV ===
+API_KEY = os.getenv("GOOGLE_API_KEY")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "Jobs")
+POST_ENDPOINT = os.getenv("POST_ENDPOINT")
 
+SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
+SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
+SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
+SNOWFLAKE_WAREHOUSE = "COMPUTE_WH"
+SNOWFLAKE_DATABASE = "INTERMEDIATE"
+SNOWFLAKE_SCHEMA = "N8N"
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+
+# === FETCH SHEET DATA ===
 sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
 response = requests.get(sheet_url)
 response.raise_for_status()
@@ -28,23 +38,21 @@ except ValueError:
 
 # Connect to Snowflake
 conn = snowflake.connector.connect(
-    user="AIRA",
-    password="UKs6f9TAUfDR@f3",
-    account="A4216615408961-LK73781",
-    warehouse="COMPUTE_WH",
-    database="INTERMEDIATE",
-    schema="N8N"
+    user=SNOWFLAKE_USER,
+    password=SNOWFLAKE_PASSWORD,
+    account=SNOWFLAKE_ACCOUNT,
+    warehouse=SNOWFLAKE_WAREHOUSE,
+    database=SNOWFLAKE_DATABASE,
+    schema=SNOWFLAKE_SCHEMA
 )
 cursor = conn.cursor()
 
-# Get current date (or datetime if needed)
 recommend_at = datetime.now().strftime('%Y-%m-%d')
 
 executed_candidate = cursor.execute("""SELECT JOB_ID from intermediate.n8n.internal_job_candidate_recs""")
 executed_candidate_list = pandas.DataFrame(executed_candidate)
 newlist = executed_candidate_list[0]
 string_list = newlist.tolist()
-# Print as a quoted list (e.g. ["id1", "id2", ...])
 quoted_list = [f'"{item}"' for item in string_list]
 
 # Process each job
@@ -66,12 +74,10 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
         print(candidate_ids)
 
         for i in candidate_ids:
-            url = 'https://n8n-app-p68zu.ondigitalocean.app/webhook-test/6f77db62-5349-4076-9577-be546c054dc0'
             myobj = {'candidate_ids': i, 'job_global_id': job_global_id}
-            x = requests.post(url, json = myobj)
+            x = requests.post(WEBHOOK_URL, json=myobj)
             print(x.text)
 
-        # Insert each candidate_id into Snowflake
         for candidate_id in candidate_ids:
             cursor.execute("""
                 INSERT INTO intermediate.n8n.internal_job_candidate_recs (job_id, recommend_at, candidate_id)
@@ -81,6 +87,5 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
     except Exception as e:
         print(f"❌ Failed for job_id: {job_global_id} — {e}")
 
-# Close Snowflake connection
 cursor.close()
 conn.close()
