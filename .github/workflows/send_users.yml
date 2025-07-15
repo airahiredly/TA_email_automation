@@ -1,38 +1,35 @@
-# File: .github/workflows/manual_run.yml
-
-name: Manual Candidate Processing
+name: Run Recommender Sync
 
 on:
-  workflow_dispatch:
-    inputs:
-      # Define a single input for the combined JSON payload
-      payload_json:
-        description: 'Paste the combined JSON payload here'
-        required: true
-        type: string
-
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches: [main]
 jobs:
-  process-candidates:
+  recommender-job:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install requests
-      
-      # This step now passes the single input to the environment
-      - name: Run Candidate Processing Script
+          pip install requests pandas snowflake snowflake-connector-python
+
+      - name: 🚀 Run recommender script
         env:
-          # Map the single input and the secret to environment variables
-          PAYLOAD_INPUT: ${{ inputs.payload_json }}
-          API_KEY_SECRET: ${{ secrets.GOOGLE_API_KEY }}
-        run: python run_workflow.py
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SHEET_NAME: ${{ secrets.GOOGLE_SHEET_NAME }}
+          POST_ENDPOINT: ${{ secrets.POST_ENDPOINT }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+        run: |
+          run_workflow.py
