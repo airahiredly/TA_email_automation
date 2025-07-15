@@ -1,74 +1,91 @@
 import requests
+import csv
+import snowflake.connector
+from datetime import datetime
+import pandas
 import os
-import time
 
-# === CONFIGURATION ===
-API_KEY = os.getenv("GSHEETS_API_KEY")
-SHEET1_ID = "129BnqQCSd8cQqxCDLsc6benKxKDkcHqmndWK3Tb0vhM"
-SHEET2_ID = "1K8xrRJgJSnd8-6jiRWNXs4FmI50Pf-oB_nEGybL7olU"
-SHEET1_RANGE = "Candidate!A:C"
-SHEET2_RANGE = "Candidate!A:C"
-DATA_WEBHOOK_URL = "https://n8n-app-p68zu.ondigitalocean.app/webhook/6f77db62-5349-4076-9577-be546c054dc0"
+# === CONFIGURATION FROM ENV ===
+API_KEY = os.getenv("GOOGLE_API_KEY")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "Jobs")
+POST_ENDPOINT = os.getenv("POST_ENDPOINT")
 
-# DATA_WEBHOOK_URL_TESTING = "https://n8n-app-p68zu.ondigitalocean.app/webhook-test/6f77db62-5349-4076-9577-be546c054dc0"
-# DATA_WEBHOOK_URL_PRODUCTION = "https://n8n-app-p68zu.ondigitalocean.app/webhook/6f77db62-5349-4076-9577-be546c054dc0"
+SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
+SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
+SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
+SNOWFLAKE_WAREHOUSE = "COMPUTE_WH"
+SNOWFLAKE_DATABASE = "INTERMEDIATE"
+SNOWFLAKE_SCHEMA = "N8N"
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
+# === FETCH SHEET DATA ===
+sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
+response = requests.get(sheet_url)
+response.raise_for_status()
+sheet_data = response.json()
 
-FINAL_TRIGGER_WEBHOOK = "https://n8n-app-p68zu.ondigitalocean.app/webhook/3111bd21-a846-4bc2-ac45-c2e76e1d0a2a"  # <--- Triggered after all rows are processed
+# Extract header + rows
+values = sheet_data.get("values", [])
+headers = values[0]
+rows = values[1:]
 
-def get_sheet_data(sheet_id, range_):
-    url = f"https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}/values/{range_}?key={API_KEY}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json().get("values", [])
-    else:
-        print(f"Error fetching sheet {sheet_id}: {response.status_code}, {response.text}")
-        return []
+# Find the index of "global_id" column
+try:
+    global_id_index = headers.index("global_id")
+except ValueError:
+    raise Exception("❌ 'global_id' column not found in sheet header.")
 
-def row_key_two_columns(row):
+# Connect to Snowflake
+conn = snowflake.connector.connect(
+    user=SNOWFLAKE_USER,
+    password=SNOWFLAKE_PASSWORD,
+    account=SNOWFLAKE_ACCOUNT,
+    warehouse=SNOWFLAKE_WAREHOUSE,
+    database=SNOWFLAKE_DATABASE,
+    schema=SNOWFLAKE_SCHEMA
+)
+cursor = conn.cursor()
+
+recommend_at = datetime.now().strftime('%Y-%m-%d')
+
+executed_candidate = cursor.execute("""SELECT JOB_ID from intermediate.n8n.internal_job_candidate_recs""")
+executed_candidate_list = pandas.DataFrame(executed_candidate)
+newlist = executed_candidate_list[0]
+string_list = newlist.tolist()
+quoted_list = [f'"{item}"' for item in string_list]
+
+# Process each job
+for job_global_id in [row[global_id_index] for row in rows if len(row) > global_id_index]:
     try:
-        return (row[0].strip().lower(), row[1].strip().lower())
-    except IndexError:
-        return ("", "")
+        api_response = requests.post(POST_ENDPOINT, json={
+            "global_id": job_global_id,
+            "exclude_global_ids": quoted_list, 
+            "limit": 5,
+            "similar": False,
+            "version": "default",
+            "minimum_topk": 20
+        })
+        api_response.raise_for_status()
+        result = api_response.json()
 
-def send_to_webhook(row):
-    try:
-        response = requests.post(DATA_WEBHOOK_URL, json={"row": row})
-        response.raise_for_status()
-        print(f"✅ Sent row to webhook: {row}")
+        recommended_users = result.get("recommended_users", [])
+        candidate_ids = [user.get("global_id") for user in recommended_users]
+        print(candidate_ids)
+
+        for i in candidate_ids:
+            myobj = {'candidate_ids': i, 'job_global_id': job_global_id}
+            x = requests.post(WEBHOOK_URL, json=myobj)
+            print(x.text)
+
+        for candidate_id in candidate_ids:
+            cursor.execute("""
+                INSERT INTO intermediate.n8n.internal_job_candidate_recs (job_id, recommend_at, candidate_id)
+                SELECT %s, %s, parse_json(%s)
+            """, (job_global_id, recommend_at, f'"{candidate_id}"'))
+
     except Exception as e:
-        print(f"❌ Failed to send row: {e}")
+        print(f"❌ Failed for job_id: {job_global_id} — {e}")
 
-def trigger_final_webhook():
-    try:
-        response = requests.post(FINAL_TRIGGER_WEBHOOK, json={"status": "completed"})
-        response.raise_for_status()
-        print("✅ Final webhook triggered successfully.")
-    except Exception as e:
-        print(f"❌ Failed to trigger final webhook: {e}")
-
-def main():
-    print("Fetching Sheet 1...")
-    sheet1_data = get_sheet_data(SHEET1_ID, SHEET1_RANGE)
-
-    print("Fetching Sheet 2...")
-    sheet2_data = get_sheet_data(SHEET2_ID, SHEET2_RANGE)
-
-    data1 = sheet1_data[1:] if sheet1_data else []  # Skip header
-    data2 = sheet2_data[1:] if sheet2_data else []
-
-    # Build set of (colA, colB) from Sheet2
-    existing_keys = set(row_key_two_columns(row) for row in data2)
-
-    for row in data1:
-        key = row_key_two_columns(row)
-        if key != ("", "") and key not in existing_keys:
-            send_to_webhook(row)
-            time.sleep(5)
-        else:
-            print(f"⏩ Skipping row (already exists or invalid): {row}")
-
-    trigger_final_webhook()
-
-if __name__ == "__main__":
-    main()
+cursor.close()
+conn.close()
