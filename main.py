@@ -11,7 +11,7 @@ API_KEY = os.getenv("GOOGLE_API_KEY", "AIzaSyADynlfr6qm28II06W6tp08rBOgfuSGyhs")
 SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "1qioNekBHJyyb9gSr39Fm67pPIhTFeZamay-Mp9F2f-4")
 SHEET_NAME = "Jobs"
 POST_ENDPOINT = os.getenv("POST_ENDPOINT", "https://my-ashley-api.hiredly.com/recommender/recommended_users")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://n8n-app-p68zu.ondigitalocean.app/webhook-test/6f77db62-5349-4076-9577-be546c054dc0")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://n8n-app-p68zu.ondigitalocean.app/webhook/6f77db62-5349-4076-9577-be546c054dc0")
 
 # Snowflake credentials from environment variables
 SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER", "AIRA")
