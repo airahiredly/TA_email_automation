@@ -7,16 +7,16 @@ import pandas
 import time
 
 # === CONFIGURATION ===
-API_KEY = os.getenv("GOOGLE_API_KEY")
-SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+API_KEY = os.getenv("GOOGLE_API_KEY", "AIzaSyADynlfr6qm28II06W6tp08rBOgfuSGyhs")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "1qioNekBHJyyb9gSr39Fm67pPIhTFeZamay-Mp9F2f-4")
 SHEET_NAME = "Jobs"
-POST_ENDPOINT = os.getenv("POST_ENDPOINT")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+POST_ENDPOINT = os.getenv("POST_ENDPOINT", "https://my-ashley-api.hiredly.com/recommender/recommended_users")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://n8n-app-p68zu.ondigitalocean.app/webhook-test/6f77db62-5349-4076-9577-be546c054dc0")
 
 # Snowflake credentials from environment variables
-SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
-SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
-SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
+SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER", "AIRA")
+SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD", "UKs6f9TAUfDR@f3")
+SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT", "A4216615408961-LK73781")
 
 sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
 response = requests.get(sheet_url)
@@ -102,7 +102,7 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
         from recommended_candidates rc
         left join applied_candidates ac on ac.job_global_id = rc.job_global_id
         cross join hiredly_employees he
-        where rc.job_global_id = '{job_global_id}'""")                               
+        where rc.job_global_id = '{job_global_id}'""")                              
 
     executed_candidate_list = pandas.DataFrame(executed_candidate)
     newlist = executed_candidate_list[0]
