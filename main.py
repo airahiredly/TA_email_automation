@@ -1,22 +1,20 @@
 import os
 import requests
-import csv
 import snowflake.connector
 from datetime import datetime
 import pandas
 import time
 
 # === CONFIGURATION ===
-API_KEY = os.getenv("GOOGLE_API_KEY", "AIzaSyADynlfr6qm28II06W6tp08rBOgfuSGyhs")
-SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "1qioNekBHJyyb9gSr39Fm67pPIhTFeZamay-Mp9F2f-4")
+API_KEY = os.getenv("GOOGLE_API_KEY")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 SHEET_NAME = "Jobs"
-POST_ENDPOINT = os.getenv("POST_ENDPOINT", "https://my-ashley-api.hiredly.com/recommender/recommended_users")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://n8n-app-p68zu.ondigitalocean.app/webhook/6f77db62-5349-4076-9577-be546c054dc0")
+POST_ENDPOINT = os.getenv("POST_ENDPOINT")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
-# Snowflake credentials from environment variables
-SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER", "AIRA")
-SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD", "UKs6f9TAUfDR@f3")
-SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT", "A4216615408961-LK73781")
+SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
+SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
+SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
 
 # Load job list from Google Sheet
 sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
@@ -88,27 +86,25 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
             WHERE rc.job_global_id = '{job_global_id}'
         """)
 
-        # Fetch and convert to DataFrame
+        # Initialize final_list as empty by default
+        final_list = []
+        
+        # Only try to process the query results if there are any
         new_rows = cursor.fetchall()
-        columns = [col[0] for col in cursor.description]
-        executed_candidate_list = pandas.DataFrame(new_rows, columns=columns)
+        if new_rows:  # Only proceed if we got results
+            columns = [col[0] for col in cursor.description]
+            executed_candidate_list = pandas.DataFrame(new_rows, columns=columns)
 
-        # Skip if empty
-        if executed_candidate_list.empty:
-            print(f"⚠️ No candidates to exclude for job_id: {job_global_id}")
-            continue
+            # Extract and clean list if we have data
+            if not executed_candidate_list.empty:
+                raw_array = executed_candidate_list.at[0, "USER_GLOBAL_ID"]  # column name might be lowercase depending on Snowflake
+                if raw_array:
+                    raw_string = str(raw_array)
+                    cleaned_string = raw_string.strip('"[]').replace('\n', '').replace(' ', '')
+                    items = cleaned_string.split(',')
+                    final_list = [item.strip(' "\'[]') for item in items if item]
 
-        # Extract and clean list
-        raw_array = executed_candidate_list.at[0, "USER_GLOBAL_ID"]  # column name might be lowercase depending on Snowflake
-        if not raw_array:
-            final_list = []
-        else:
-            raw_string = str(raw_array)
-            cleaned_string = raw_string.strip('"[]').replace('\n', '').replace(' ', '')
-            items = cleaned_string.split(',')
-            final_list = [item.strip(' "\'[]') for item in items if item]
-
-        # Post request to recommend users
+        # Always make the POST request, even if final_list is empty
         api_response = requests.post(POST_ENDPOINT, json={
             "global_id": job_global_id,
             "exclude_global_ids": final_list,
@@ -149,4 +145,3 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
 
 cursor.close()
 conn.close()
-
