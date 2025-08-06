@@ -112,7 +112,7 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
         api_response = requests.post(POST_ENDPOINT, json={
             "global_id": job_global_id,
             "exclude_global_ids": final_list,
-            "limit": 10,
+            "limit": 20,
             "similar": False,
             "version": "v1.2",
             "minimum_topk": 20,
