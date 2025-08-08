@@ -64,7 +64,9 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
             ),
             recommended_candidates AS (
                 SELECT job_id AS job_global_id, ARRAY_AGG(candidate_id) AS user_global_id 
-                FROM intermediate.n8n.internal_job_candidate_recs
+                FROM intermediate.n8n.internal_job_candidate_recs i
+                INNER JOIN base.postgresql_hiredly_my.users u on i.candidate_id = u.global_id
+                WHERE age <= 30
                 GROUP BY job_global_id
             ),
             hiredly_employees AS (
