@@ -1,8 +1,6 @@
 name: Run Job Recommender Script
 
 on:
-  schedule:
-  
   workflow_dispatch: # Manual trigger
 
 jobs:
