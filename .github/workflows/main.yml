@@ -2,8 +2,7 @@ name: Run Job Recommender Script
 
 on:
   schedule:
-    # Runs at 2am every day (MYT, which is UTC+8)
-    - cron: '0 18 * * *'
+  
   workflow_dispatch: # Manual trigger
 
 jobs:
