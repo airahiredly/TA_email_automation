@@ -66,7 +66,7 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
                 SELECT job_id AS job_global_id, ARRAY_AGG(candidate_id) AS user_global_id 
                 FROM intermediate.n8n.internal_job_candidate_recs i
                 INNER JOIN base.postgresql_hiredly_my.users u on i.candidate_id = u.global_id
-                WHERE age <= 30
+                WHERE age <= 40
                 GROUP BY job_global_id
             ),
             hiredly_employees AS (
@@ -110,7 +110,7 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
         api_response = requests.post(POST_ENDPOINT, json={
             "global_id": job_global_id,
             "exclude_global_ids": final_list,
-            "limit": 30,
+            "limit": 50,
             "similar": False,
             "version": "v1.2",
             "minimum_topk": 20,
