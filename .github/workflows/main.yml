@@ -31,4 +31,4 @@ jobs:
           pip install requests snowflake-connector-python pandas
 
       - name: Run recommender script
-        run: python your_script_name.py
+        run: python maih.py
