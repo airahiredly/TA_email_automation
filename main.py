@@ -76,7 +76,7 @@ for job_global_id in job_lookup.keys():
             ),
             recommended_candidates as (
                 select job_id as job_global_id, array_agg(candidate_id) as user_global_id 
-                from intermediate.n8n.internal_job_candidate_recs_staging
+                from intermediate.n8n.internal_job_candidate_recs
                 group by job_global_id
             ),
             hiredly_employees as (
@@ -151,12 +151,12 @@ for job_global_id in job_lookup.keys():
                 time.sleep(3)
 
                 cursor.execute("""
-                    INSERT INTO intermediate.n8n.internal_job_candidate_recs_staging (job_id, recommend_at, candidate_id)
+                    INSERT INTO intermediate.n8n.internal_job_candidate_recs (job_id, recommend_at, candidate_id)
                     SELECT %s, %s, parse_json(%s)
                 """, (job_global_id, recommend_at, f'"{candidate}"'))
 
                 cursor.execute("""
-                    DELETE FROM intermediate.n8n.internal_job_candidate_recs_staging 
+                    DELETE FROM intermediate.n8n.internal_job_candidate_recs
                     WHERE recommend_at < DATEADD(DAY, -180, CURRENT_DATE);
                 """)
 
