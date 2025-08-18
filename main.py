@@ -7,15 +7,15 @@ import time
 import json
 
 # === CONFIGURATION ===
-API_KEY = os.getenv("GOOGLE_API_KEY", "AIzaSyADynlfr6qm28II06W6tp08rBOgfuSGyhs")
-SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "1qioNekBHJyyb9gSr39Fm67pPIhTFeZamay-Mp9F2f-4")
+API_KEY = os.getenv("GOOGLE_API_KEY")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 SHEET_NAME = "Jobs"
-POST_ENDPOINT = os.getenv("POST_ENDPOINT", "https://my-ashley-api.hiredly.com/recommender/recommended_users")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL", "http://152.42.219.155:5678/webhook/f41577d2-4349-459c-81e1-4d9963d498d3")
+POST_ENDPOINT = os.getenv("POST_ENDPOINT")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
-SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER", "AIRA")
-SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD", "UKs6f9TAUfDR@f3")
-SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT", "A4216615408961-LK73781")
+SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
+SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
+SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
 
 # === Load job list from Google Sheet ===
 sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
