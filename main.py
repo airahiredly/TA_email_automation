@@ -155,11 +155,6 @@ for job_global_id in job_lookup.keys():
                     SELECT %s, %s, parse_json(%s)
                 """, (job_global_id, recommend_at, f'"{candidate}"'))
 
-                cursor.execute("""
-                    DELETE FROM intermediate.n8n.internal_job_candidate_recs
-                    WHERE recommend_at < DATEADD(DAY, -180, CURRENT_DATE);
-                """)
-
                 print("Candidate Added")
     except Exception as e:
         print(f"❌ Failed for job_id: {job_global_id} — {e}")
