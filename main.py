@@ -43,7 +43,7 @@ for row in rows:
             "sent_by": row[sent_by_index],
             "name": row[name_index],
             "company_name": row[company_name_index],
-            "recruiter_email": row[recruiter_email]
+            "recruiter_email": row[recruiter_email_index]
         }
 
 # === Connect to Snowflake ===
