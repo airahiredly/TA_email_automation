@@ -42,7 +42,7 @@ for row in rows:
         job_lookup[row[global_id_index]] = {
             "sent_by": row[sent_by_index],
             "name": row[name_index],
-            "company_name": row[coompany_name_index]
+            "company_name": row[company_name_index]
         }
 
 # === Connect to Snowflake ===
