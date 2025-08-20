@@ -8,10 +8,10 @@ import json
 
 # === CONFIGURATION ===
 API_KEY = os.getenv("GOOGLE_API_KEY")
-SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID_HX")
 SHEET_NAME = "Jobs"
 POST_ENDPOINT = os.getenv("POST_ENDPOINT")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL_HX")
 
 SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
 SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
