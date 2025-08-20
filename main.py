@@ -33,6 +33,7 @@ try:
     sent_by_index = headers.index("Sent_By")
     name_index = headers.index("Name")
     company_name_index = headers.index("Company_Name")
+    recruiter_email_index = headers.index("Recruiter_Email")
 except ValueError as e:
     raise Exception(f"❌ Missing column in sheet header: {e}")
 
