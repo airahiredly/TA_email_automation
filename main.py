@@ -42,7 +42,8 @@ for row in rows:
         job_lookup[row[global_id_index]] = {
             "sent_by": row[sent_by_index],
             "name": row[name_index],
-            "company_name": row[company_name_index]
+            "company_name": row[company_name_index],
+            "recruiter_email": row[recruiter_email]
         }
 
 # === Connect to Snowflake ===
@@ -140,6 +141,7 @@ for job_global_id in job_lookup.keys():
             sent_by = job_lookup[job_global_id]["sent_by"]
             name = job_lookup[job_global_id]["name"]
             company_name = job_lookup[job_global_id]["company_name"]
+            recruiter_email = job_lookup[job_global_id]["recruiter_email"]
 
             for candidate in candidate_ids:
                 myobj = {
@@ -147,7 +149,8 @@ for job_global_id in job_lookup.keys():
                     "job_global_id": job_global_id,
                     "sent_by": sent_by,
                     "name": name,
-                    "company_name": company_name
+                    "company_name": company_name,
+                    "recruiter_email": recuiter_email;
                 }
                 x = requests.post(WEBHOOK_URL, json=myobj)
                 print(f"Webhook response: {x.text}")
