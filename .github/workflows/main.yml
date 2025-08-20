@@ -9,9 +9,9 @@ jobs:
 
     env:
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-      GOOGLE_SHEET_ID_HX: ${{ secrets.GOOGLE_SHEET_ID_HX }}
+      GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
       POST_ENDPOINT: ${{ secrets.POST_ENDPOINT }}
-      WEBHOOK_URL_HX: ${{ secrets.WEBHOOK_URL_HX }}
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
       SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
