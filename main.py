@@ -18,7 +18,7 @@ SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
 SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
 
 # === Load job list from Google Sheet ===
-sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
+sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/11GgBFmeNebGHNLcRlcGNdoUrayVDIjekCCIW3NfrTo0/values/{SHEET_NAME}?key={API_KEY}"
 response = requests.get(sheet_url)
 response.raise_for_status()
 sheet_data = response.json()
