@@ -32,6 +32,7 @@ try:
     global_id_index = headers.index("global_id")
     sent_by_index = headers.index("Sent_By")
     name_index = headers.index("Name")
+    company_name_index = headers.index("Company_Name")
 except ValueError as e:
     raise Exception(f"❌ Missing column in sheet header: {e}")
 
@@ -40,7 +41,8 @@ for row in rows:
     if len(row) > max(global_id_index, sent_by_index, name_index):
         job_lookup[row[global_id_index]] = {
             "sent_by": row[sent_by_index],
-            "name": row[name_index]
+            "name": row[name_index],
+            "company_name": row[coompany_name_index]
         }
 
 # === Connect to Snowflake ===
@@ -137,13 +139,15 @@ for job_global_id in job_lookup.keys():
             # === Send webhook with extra fields ===
             sent_by = job_lookup[job_global_id]["sent_by"]
             name = job_lookup[job_global_id]["name"]
+            company_name = job_lookup[job_global_id]["company_name"]
 
             for candidate in candidate_ids:
                 myobj = {
                     "candidate_ids": candidate,
                     "job_global_id": job_global_id,
                     "sent_by": sent_by,
-                    "name": name
+                    "name": name,
+                    "company_name": company_name
                 }
                 x = requests.post(WEBHOOK_URL, json=myobj)
                 print(f"Webhook response: {x.text}")
