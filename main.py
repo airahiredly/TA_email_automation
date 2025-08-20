@@ -8,10 +8,10 @@ import json
 
 # === CONFIGURATION ===
 API_KEY = os.getenv("GOOGLE_API_KEY")
-SHEET_ID = os.getenv("GOOGLE_SHEET_ID_HX")
+SHEET_ID = "11GgBFmeNebGHNLcRlcGNdoUrayVDIjekCCIW3NfrTo0
 SHEET_NAME = "Jobs"
 POST_ENDPOINT = os.getenv("POST_ENDPOINT")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL_HX")
+WEBHOOK_URL = "http://152.42.219.155:5678/webhook-test/f41577d2-4349-459c-81e1-4d9963d498d3"
 
 SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
 SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
@@ -63,7 +63,7 @@ for job_global_id in job_lookup.keys():
             with jobs as (
                 select title, id as job_id, global_id as job_global_id
                 from base.postgresql_hiredly_my.jobs 
-                where company_id = '44ea6c51-c84d-423f-8649-96cb592ea995'
+                where company_id = '750524cc-6b5d-48c8-8438-0b5b1c3f6aea'
                 and is_active = true
                 and lower(title) not like '%career fair%'
             ),
