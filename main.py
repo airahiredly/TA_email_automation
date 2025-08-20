@@ -8,7 +8,7 @@ import json
 
 # === CONFIGURATION ===
 API_KEY = os.getenv("GOOGLE_API_KEY")
-SHEET_ID = "11GgBFmeNebGHNLcRlcGNdoUrayVDIjekCCIW3NfrTo0
+SHEET_ID = "11GgBFmeNebGHNLcRlcGNdoUrayVDIjekCCIW3NfrTo0"
 SHEET_NAME = "Jobs"
 POST_ENDPOINT = os.getenv("POST_ENDPOINT")
 WEBHOOK_URL = "http://152.42.219.155:5678/webhook-test/f41577d2-4349-459c-81e1-4d9963d498d3"
