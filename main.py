@@ -150,7 +150,7 @@ for job_global_id in job_lookup.keys():
                     "sent_by": sent_by,
                     "name": name,
                     "company_name": company_name,
-                    "recruiter_email": recuiter_email;
+                    "recruiter_email": recuiter_email
                 }
                 x = requests.post(WEBHOOK_URL, json=myobj)
                 print(f"Webhook response: {x.text}")
