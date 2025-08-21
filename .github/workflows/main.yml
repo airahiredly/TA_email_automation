@@ -25,6 +25,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Disable SSL 
+        run: | 
+          git config --global http.sslVerify false
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
