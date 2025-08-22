@@ -125,7 +125,7 @@ for job_global_id in job_lookup.keys():
                 "limit": 1,
                 "similar": False,
                 "version": "v1.2",
-                "minimum_topk": 20,
+                "minimum_topk": 1,
                 "nationality": ["Malaysian"]
             }
 
