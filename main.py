@@ -7,7 +7,7 @@ import time
  
 # === CONFIGURATION ===
 API_KEY = os.getenv("GOOGLE_API_KEY")
-SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID_RS")
 SHEET_NAME = "Jobs"
 POST_ENDPOINT = os.getenv("POST_ENDPOINT")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL_REACTIVATION_SQUAD")
