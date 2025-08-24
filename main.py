@@ -11,7 +11,7 @@ API_KEY = os.getenv("GOOGLE_API_KEY")
 SHEET_ID = os.getenv("GOOGLE_SHEET_ID_HX")
 SHEET_NAME = "Jobs"
 POST_ENDPOINT = os.getenv("POST_ENDPOINT")
-WEBHOOK_URL = "https://otto.hiredly.com/webhook/fec29d53-2f5a-41d3-984f-fa2324c56a50"
+WEBHOOK_URL = "WEBHOOK_URL_HX"
 
 SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
 SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
