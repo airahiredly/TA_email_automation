@@ -27,25 +27,24 @@ values = sheet_data.get("values", [])
 headers = values[0]
 rows = values[1:]
 
-# --- Build lookup dict from sheet ---
 try:
     global_id_index = headers.index("global_id")
-    sent_by_index = headers.index("Sent_By")
-    name_index = headers.index("Name")
-    company_name_index = headers.index("Company_Name")
-    recruiter_email_index = headers.index("Recruiter_Email")
+    sent_by_index = headers.index("sent_by")
+    agent_name_index = headers.index("agent_name")
+    recruiter_email_index = headers.index("recruiter_email")
+    status_index = headers.index("status")
 except ValueError as e:
     raise Exception(f"❌ Missing column in sheet header: {e}")
 
 job_lookup = {}
 for row in rows:
-    if len(row) > max(global_id_index, sent_by_index, name_index):
-        job_lookup[row[global_id_index]] = {
-            "sent_by": row[sent_by_index],
-            "name": row[name_index],
-            "company_name": row[company_name_index],
-            "recruiter_email": row[recruiter_email_index]
-        }
+    if len(row) > max(global_id_index, sent_by_index,agent_name_index,status_index,recruiter_email_index):
+        if row[status_index].lower() == "active":
+            job_lookup[row[global_id_index]] = {
+                "sent_by": row[sent_by_index],
+                "agent_name": row[agent_name_index],
+                "recruiter_email": row[recruiter_email_index]
+            }
 
 # === Connect to Snowflake ===
 conn = snowflake.connector.connect(
@@ -67,9 +66,7 @@ for job_global_id in job_lookup.keys():
             with jobs as (
                 select title, id as job_id, global_id as job_global_id
                 from base.postgresql_hiredly_my.jobs 
-                where company_id = '750524cc-6b5d-48c8-8438-0b5b1c3f6aea'
-                and is_active = true
-                and lower(title) not like '%career fair%'
+                where is_active = true
             ),
             applied_candidates as (
                 select j.job_global_id, array_agg(u.global_id) as user_global_id
@@ -122,10 +119,10 @@ for job_global_id in job_lookup.keys():
             api_payload = {
                 "global_id": job_global_id,
                 "exclude_global_ids": final_list,
-                "limit": 1,
+                "limit": 10,
                 "similar": False,
                 "version": "v1.2",
-                "minimum_topk": 1,
+                "minimum_topk": 10,
                 "nationality": ["Malaysian"]
             }
 
@@ -140,8 +137,7 @@ for job_global_id in job_lookup.keys():
 
             # === Send webhook with extra fields ===
             sent_by = job_lookup[job_global_id]["sent_by"]
-            name = job_lookup[job_global_id]["name"]
-            company_name = job_lookup[job_global_id]["company_name"]
+            name = job_lookup[job_global_id]["agent_name"]
             recruiter_email = job_lookup[job_global_id]["recruiter_email"]
 
             for candidate in candidate_ids:
@@ -149,8 +145,7 @@ for job_global_id in job_lookup.keys():
                     "candidate_ids": candidate,
                     "job_global_id": job_global_id,
                     "sent_by": sent_by,
-                    "name": name,
-                    "company_name": company_name,
+                    "agent_name": name,
                     "recruiter_email": recruiter_email
                 }
                 x = requests.post(WEBHOOK_URL, json=myobj)
@@ -159,7 +154,7 @@ for job_global_id in job_lookup.keys():
                 time.sleep(5)
 
                 cursor.execute("""
-                    INSERT INTO intermediate.n8n.internal_job_candidate_recs (job_id, recommend_at, candidate_id)
+                    INSERT INTO intermediate.n8n.internal_job_candidate_recs_staging (job_id, recommend_at, candidate_id)
                     SELECT %s, %s, parse_json(%s)
                 """, (job_global_id, recommend_at, f'"{candidate}"'))
 
