@@ -152,7 +152,7 @@ for job_global_id in job_lookup.keys():
                 for u in recommended:
                     gid = u["global_id"]
                     age = get_age_from_snowflake(gid)  
-                    if (age is not None or age < 40) and gid not in collected:
+                    if (age is None or age < 40) and gid not in collected:
                         collected.append(gid)
                     if len(collected) >= 50:
                         break
