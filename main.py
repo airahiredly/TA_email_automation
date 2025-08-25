@@ -119,10 +119,10 @@ for job_global_id in job_lookup.keys():
             api_payload = {
                 "global_id": job_global_id,
                 "exclude_global_ids": final_list,
-                "limit": 10,
+                "limit": 100,
                 "similar": False,
                 "version": "v1.2",
-                "minimum_topk": 10,
+                "minimum_topk": 100,
                 "nationality": ["Malaysian"]
             }
 
@@ -133,7 +133,7 @@ for job_global_id in job_lookup.keys():
             recommended_users = result.get("recommended_users", [])
             candidate_ids = [user.get("global_id") for user in recommended_users if user.get("global_id")]
 
-            print(f"✅ Job {job_global_id} → Recommended {len(candidate_ids)} users")
+            print(f"Job {job_global_id} → Recommended {len(candidate_ids)} users")
 
             # === Send webhook with extra fields ===
             sent_by = job_lookup[job_global_id]["sent_by"]
@@ -158,7 +158,7 @@ for job_global_id in job_lookup.keys():
                     SELECT %s, %s, parse_json(%s)
                 """, (job_global_id, recommend_at, f'"{candidate}"'))
 
-                print("Candidate Added")
+                print("Candidate added to Snowflake")
     except Exception as e:
         print(f"❌ Failed for job_id: {job_global_id} — {e}")
 
