@@ -54,6 +54,23 @@ conn = snowflake.connector.connect(
 )
 cursor = conn.cursor()
 
+def get_age_from_snowflake(global_id):
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT age 
+                FROM base.postgresql_hiredly_my.users 
+                WHERE global_id = %s
+            """, (global_id,))
+            row = cur.fetchone()
+            if row:
+                return row[0]  # age column
+            else:
+                return None
+    except Exception as e:
+        print(f"Snowflake query failed for {global_id}: {e}")
+        return None
+        
 recommend_at = datetime.now().strftime('%Y-%m-%d')
 
 # === Process each job ===
