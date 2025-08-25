@@ -125,14 +125,23 @@ for job_global_id in job_lookup.keys():
                 "nationality": ["Malaysian"]
             }
 
-            api_response = requests.post(POST_ENDPOINT, json=api_payload)
-            api_response.raise_for_status()
-            result = api_response.json()
-
-            recommended_users = result.get("recommended_users", [])
-            candidate_ids = [user.get("global_id") for user in recommended_users if user.get("global_id")]
-
-            print(f"✅ Job {job_global_id} → Recommended {len(candidate_ids)} users")
+            collected = []
+            while len(collected) < 50:
+                response = requests.post(POST_ENDPOINT, json=api_payload).json()
+                recommended = response.get("recommended_users", [])
+                
+                if not recommended:
+                    break  
+                for u in recommended:
+                    gid = u["global_id"]
+                    age = get_age_from_snowflake(gid)  
+                    if (age is not None or age < 40) and gid not in collected:
+                        collected.append(gid)
+                    if len(collected) >= 50:
+                        break
+            final_candidates = collected[:50]
+    
+            print(f" Job {job_global_id} --> Recommended {len(final_candidates)} users after filtering")
 
             # === Send webhook with extra fields ===
             sent_by = job_lookup[job_global_id]["sent_by"]
