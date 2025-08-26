@@ -30,7 +30,7 @@ rows = values[1:]
 # --- Build lookup dict from sheet ---
 try:
     global_id_index = headers.index("global_id")
-    sent_by_index = headers.index("sent_By")
+    sent_by_index = headers.index("sent_by")
     name_index = headers.index("name")
 except ValueError as e:
     raise Exception(f"❌ Missing column in sheet header: {e}")
