@@ -30,8 +30,8 @@ rows = values[1:]
 # --- Build lookup dict from sheet ---
 try:
     global_id_index = headers.index("global_id")
-    sent_by_index = headers.index("Sent_By")
-    name_index = headers.index("Name")
+    sent_by_index = headers.index("sent_By")
+    name_index = headers.index("name")
 except ValueError as e:
     raise Exception(f"❌ Missing column in sheet header: {e}")
 
@@ -54,23 +54,6 @@ conn = snowflake.connector.connect(
 )
 cursor = conn.cursor()
 
-def get_age_from_snowflake(global_id):
-    try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT age 
-                FROM base.postgresql_hiredly_my.users 
-                WHERE global_id = %s
-            """, (global_id,))
-            row = cur.fetchone()
-            if row:
-                return row[0]  # age column
-            else:
-                return None
-    except Exception as e:
-        print(f"Snowflake query failed for {global_id}: {e}")
-        return None
-        
 recommend_at = datetime.now().strftime('%Y-%m-%d')
 
 # === Process each job ===
@@ -142,23 +125,14 @@ for job_global_id in job_lookup.keys():
                 "nationality": ["Malaysian"]
             }
 
-            collected = []
-            while len(collected) < 50:
-                response = requests.post(POST_ENDPOINT, json=api_payload).json()
-                recommended = response.get("recommended_users", [])
-                
-                if not recommended:
-                    break  
-                for u in recommended:
-                    gid = u["global_id"]
-                    age = get_age_from_snowflake(gid)  
-                    if (age is None or age < 40) and gid not in collected:
-                        collected.append(gid)
-                    if len(collected) >= 50:
-                        break
-            final_candidates = collected[:50]
-    
-            print(f" Job {job_global_id} --> Recommended {len(final_candidates)} users after filtering")
+            api_response = requests.post(POST_ENDPOINT, json=api_payload)
+            api_response.raise_for_status()
+            result = api_response.json()
+
+            recommended_users = result.get("recommended_users", [])
+            candidate_ids = [user.get("global_id") for user in recommended_users if user.get("global_id")]
+
+            print(f"✅ Job {job_global_id} → Recommended {len(candidate_ids)} users")
 
             # === Send webhook with extra fields ===
             sent_by = job_lookup[job_global_id]["sent_by"]
