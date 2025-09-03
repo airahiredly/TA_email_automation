@@ -119,7 +119,7 @@ for job_global_id in job_lookup.keys():
             api_payload = {
                 "global_id": job_global_id,
                 "exclude_global_ids": final_list,
-                "limit": 100,
+                "limit": 50,
                 "similar": False,
                 "version": "v1.2",
                 "minimum_topk": 100,
