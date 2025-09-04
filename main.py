@@ -122,7 +122,7 @@ for job_global_id in job_lookup.keys():
                 "similar": False,
                 "version": "v1.2",
                 "minimum_topk": 50,
-                "nationality": ["Malaysian"]
+                "nationality": []
             }
 
             api_response = requests.post(POST_ENDPOINT, json=api_payload)
