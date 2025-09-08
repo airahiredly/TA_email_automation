@@ -115,7 +115,7 @@ for job_global_id in [row[global_id_index] for row in rows if len(row) > global_
             "similar": False,
             "version": "v1.2",
             "minimum_topk": 20,
-            "nationality": ["Malaysian"]
+            "nationality": ["Malaysian",""]
         })
         api_response.raise_for_status()
         result = api_response.json()
