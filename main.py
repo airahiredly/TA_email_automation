@@ -16,6 +16,7 @@ SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
 SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
 SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
 
+
 # === Load job list from Google Sheet ===
 sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
 response = requests.get(sheet_url)
@@ -26,21 +27,22 @@ values = sheet_data.get("values", [])
 headers = values[0]
 rows = values[1:]
 
-# --- Build lookup dict from sheet ---
 try:
     global_id_index = headers.index("global_id")
     sent_by_index = headers.index("sent_by")
-    name_index = headers.index("agent_name")
+    agent_name_index = headers.index("agent_name")
+    status_index = headers.index("status")
 except ValueError as e:
     raise Exception(f"❌ Missing column in sheet header: {e}")
 
 job_lookup = {}
 for row in rows:
-    if len(row) > max(global_id_index, sent_by_index, name_index):
-        job_lookup[row[global_id_index]] = {
-            "sent_by": row[sent_by_index],
-            "agent_name": row[name_index]
-        }
+    if len(row) > max(global_id_index, sent_by_index,agent_name_index,status_index):
+        if row[status_index].lower() == "active":
+            job_lookup[row[global_id_index]] = {
+                "sent_by": row[sent_by_index],
+                "agent_name": row[agent_name_index]
+            }
 
 # === Connect to Snowflake ===
 conn = snowflake.connector.connect(
@@ -62,9 +64,7 @@ for job_global_id in job_lookup.keys():
             with jobs as (
                 select title, id as job_id, global_id as job_global_id
                 from base.postgresql_hiredly_my.jobs 
-                where company_id = '44ea6c51-c84d-423f-8649-96cb592ea995'
-                and is_active = true
-                and lower(title) not like '%career fair%'
+                where is_active = true
             ),
             applied_candidates as (
                 select j.job_global_id, array_agg(u.global_id) as user_global_id
@@ -117,11 +117,11 @@ for job_global_id in job_lookup.keys():
             api_payload = {
                 "global_id": job_global_id,
                 "exclude_global_ids": final_list,
-                "limit": 50,
+                "limit": 10,
                 "similar": False,
                 "version": "v1.2",
-                "minimum_topk": 50,
-                "nationality": ["Malaysian", ""]
+                "minimum_topk": 10,
+                "nationality": ["Malaysian",""]
             }
 
             api_response = requests.post(POST_ENDPOINT, json=api_payload)
@@ -131,8 +131,9 @@ for job_global_id in job_lookup.keys():
             recommended_users = result.get("recommended_users", [])
             candidate_ids = [user.get("global_id") for user in recommended_users if user.get("global_id")]
 
-            print(f"✅ Job {job_global_id} → Recommended {len(candidate_ids)} users")
-         
+            print(f"Job {job_global_id} → Recommended {len(candidate_ids)} users")
+
+            # === Send webhook with extra fields ===
             sent_by = job_lookup[job_global_id]["sent_by"]
             name = job_lookup[job_global_id]["agent_name"]
 
@@ -149,11 +150,11 @@ for job_global_id in job_lookup.keys():
                 time.sleep(5)
 
                 cursor.execute("""
-                    INSERT INTO intermediate.n8n.internal_job_candidate_recs (job_id, recommend_at, candidate_id)
+                    INSERT INTO intermediate.n8n.internal_job_candidate_recs_staging (job_id, recommend_at, candidate_id)
                     SELECT %s, %s, parse_json(%s)
                 """, (job_global_id, recommend_at, f'"{candidate}"'))
 
-                print("Candidate Added")
+                print("Candidate added to Snowflake")
     except Exception as e:
         print(f"❌ Failed for job_id: {job_global_id} — {e}")
 
