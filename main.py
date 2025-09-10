@@ -15,7 +15,7 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL_REACTIVATION_SQUAD")
 SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER", "AIRA")
 SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD", "UKs6f9TAUfDR@f3")
 SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT", "A4216615408961-LK73781")
-
+print(f"API key length: {len(api_key) if api_key else 'MISSING'}")
 # === Load job list from Google Sheet ===
 sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
 response = requests.get(sheet_url)
