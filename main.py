@@ -4,19 +4,17 @@ import snowflake.connector
 from datetime import datetime
 import pandas
 import time
-import json
  
 # === CONFIGURATION ===
 API_KEY = os.getenv("GOOGLE_API_KEY")
 SHEET_ID = os.getenv("GOOGLE_SHEET_ID_RS")
 SHEET_NAME = "Jobs"
-POST_ENDPOINT = os.getenv("POST_ENDPOINT")
+POST_ENDPOINT =  os.getenv("POST_ENDPOINT")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL_REACTIVATION_SQUAD")
 
-SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
-SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
-SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
-
+SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER", "AIRA")
+SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD", "UKs6f9TAUfDR@f3")
+SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT", "A4216615408961-LK73781")
 
 # === Load job list from Google Sheet ===
 sheet_url = f"https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{SHEET_NAME}?key={API_KEY}"
@@ -27,7 +25,6 @@ sheet_data = response.json()
 values = sheet_data.get("values", [])
 headers = values[0]
 rows = values[1:]
-
 
 try:
     global_id_index = headers.index("global_id")
