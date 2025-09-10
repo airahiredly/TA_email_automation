@@ -4,6 +4,7 @@ import snowflake.connector
 from datetime import datetime
 import pandas
 import time
+import json
  
 # === CONFIGURATION ===
 API_KEY = os.getenv("GOOGLE_API_KEY")
