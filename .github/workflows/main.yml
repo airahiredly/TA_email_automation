@@ -9,10 +9,10 @@ jobs:
 
     env:
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-      GOOGLE_SHEET_ID_HX: ${{ secrets.GOOGLE_SHEET_ID_RS }}
+      GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID_RS }}
       POST_ENDPOINT: ${{ secrets.POST_ENDPOINT }}
-      WEBHOOK_URL_HX: ${{ secrets.WEBHOOK_URL_HX }}
-      SNOWFLAKE_USER: ${{ secrets.WEBHOOK_URL_REACTIVATION_SQUAD }}
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL_REACTIVATION_SQUAD }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
       SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
 
@@ -24,6 +24,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Disable SSL 
+        run: | 
+          git config --global http.sslVerify false
 
       - name: Install dependencies
         run: |
