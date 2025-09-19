@@ -151,7 +151,7 @@ for job_global_id in job_lookup.keys():
                 x = requests.post(WEBHOOK_URL, json=myobj)
                 print(f"Webhook response: {x.text}")
 
-                time.sleep(20)
+                time.sleep(10)
 
                 cursor.execute("""
                     INSERT INTO intermediate.n8n.internal_job_candidate_recs (job_id, recommend_at, candidate_id)
