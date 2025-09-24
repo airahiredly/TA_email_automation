@@ -32,16 +32,18 @@ try:
     global_id_index = headers.index("global_id")
     sent_by_index = headers.index("sent_by")
     name_index = headers.index("name")
+    cc_index = headers.index("additional_cc")
 except ValueError as e:
     raise Exception(f"❌ Missing column in sheet header: {e}")
 
 job_lookup = {}
 for row in rows:
-    if len(row) > max(global_id_index, sent_by_index, name_index):
-        job_lookup[row[global_id_index]] = {
-            "sent_by": row[sent_by_index],
-            "name": row[name_index]
-        }
+    job_lookup[row[global_id_index]] = {
+        "sent_by": row[sent_by_index] if sent_by_index < len(row) else "",
+        "name": row[name_index] if name_index < len(row) else "",
+        "cc": row[cc_index] if cc_index < len(row) else ""
+    }
+
 
 # === Connect to Snowflake ===
 conn = snowflake.connector.connect(
@@ -118,10 +120,10 @@ for job_global_id in job_lookup.keys():
             api_payload = {
                 "global_id": job_global_id,
                 "exclude_global_ids": final_list,
-                "limit": 100,
+                "limit": 1,
                 "similar": False,
                 "version": "v1.2",
-                "minimum_topk": 100,
+                "minimum_topk": 1,
                 "nationality": ["Malaysian", ""]
             }
 
@@ -137,13 +139,15 @@ for job_global_id in job_lookup.keys():
             # === Send webhook with extra fields ===
             sent_by = job_lookup[job_global_id]["sent_by"]
             name = job_lookup[job_global_id]["name"]
+            cc = job_lookup[job_global_id]["cc"]
 
             for candidate in candidate_ids:
                 myobj = {
                     "candidate_ids": candidate,
                     "job_global_id": job_global_id,
                     "sent_by": sent_by,
-                    "name": name
+                    "name": name,
+                    "cc": cc
                 }
                 x = requests.post(WEBHOOK_URL, json=myobj)
                 print(f"Webhook response: {x.text}")
@@ -151,7 +155,7 @@ for job_global_id in job_lookup.keys():
                 time.sleep(10)
 
                 cursor.execute("""
-                    INSERT INTO intermediate.n8n.internal_job_candidate_recs (job_id, recommend_at, candidate_id)
+                    INSERT INTO intermediate.n8n.internal_job_candidate_recs_staging (job_id, recommend_at, candidate_id)
                     SELECT %s, %s, parse_json(%s)
                 """, (job_global_id, recommend_at, f'"{candidate}"'))
 
