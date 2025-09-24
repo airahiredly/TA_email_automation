@@ -155,7 +155,7 @@ for job_global_id in job_lookup.keys():
                 time.sleep(10)
 
                 cursor.execute("""
-                    INSERT INTO intermediate.n8n.internal_job_candidate_recs_staging (job_id, recommend_at, candidate_id)
+                    INSERT INTO intermediate.n8n.internal_job_candidate_recs (job_id, recommend_at, candidate_id)
                     SELECT %s, %s, parse_json(%s)
                 """, (job_global_id, recommend_at, f'"{candidate}"'))
 
