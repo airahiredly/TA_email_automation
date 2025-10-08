@@ -64,10 +64,7 @@ for job_global_id in job_lookup.keys():
         cursor.execute(f"""
             with jobs as (
                 select title, id as job_id, global_id as job_global_id
-                from base.postgresql_hiredly_my.jobs 
-                where company_id = '44ea6c51-c84d-423f-8649-96cb592ea995'
-                and is_active = true
-                and lower(title) not like '%career fair%'
+                from base.postgresql_hiredly_my.jobs
             ),
             applied_candidates as (
                 select j.job_global_id, array_agg(u.global_id) as user_global_id
